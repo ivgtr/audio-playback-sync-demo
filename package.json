@@ -4,8 +4,11 @@
   "description": "音声再生方式による再生位置ズレ抑制のデモアプリケーション - MediaSource Extensions vs ObjectURL方式の比較検証",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js --watch . --ext js,html,css",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "node server.js",
+    "serve:dev": "nodemon server.js --watch . --ext js,html,css",
     "test": "echo \"No tests specified\" && exit 0"
   },
   "keywords": [
@@ -40,6 +43,7 @@
     "express": "^4.18.2"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "vite": "^6.3.5"
   }
 }
