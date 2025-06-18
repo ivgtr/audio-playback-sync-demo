@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音声再生方式による再生位置ズレ抑制デモ</title>
+    <meta name="description" content="MediaSource Extensions vs ObjectURL方式の音声再生同期性能を比較検証するデモアプリケーション">
+    <meta name="keywords" content="音声再生,MediaSource,Web Audio API,HTML5,JavaScript,同期,デモ">
+    <meta name="author" content="Your Name">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>音声再生方式による再生位置ズレ抑制デモ</h1>
+            <p class="subtitle">MediaSource Extensions vs ObjectURL方式の同期性能比較</p>
+        </header>
+        
+        <!-- 再生方式選択 -->
+        <div class="playback-mode-section">
+            <h3>再生方式</h3>
+            <div class="mode-switch">
+                <label class="switch-option">
+                    <input type="radio" name="playbackMode" value="mediasource" checked>
+                    <span class="radio-label">MediaSource方式</span>
+                    <small class="mode-description">高度な制御が可能（デバッグ用）</small>
+                </label>
+                <label class="switch-option">
+                    <input type="radio" name="playbackMode" value="direct">
+                    <span class="radio-label">ダイレクト方式</span>
+                    <small class="mode-description">標準的な再生方法</small>
+                </label>
+            </div>
+        </div>
+        
+        <div class="upload-section">
+            <label for="fileInput" class="file-label">
+                音声ファイルを選択
+                <input type="file" id="fileInput" accept="audio/*" />
+            </label>
+            <div id="fileName" class="file-name"></div>
+            
+            <div class="url-section">
+                <div class="section-divider">または</div>
+                <div class="url-input-group">
+                    <input type="url" id="urlInput" placeholder="音声ファイルのURLを入力" class="url-input">
+                    <button id="loadUrlBtn" class="load-url-btn">読み込み</button>
+                </div>
+                <div id="urlStatus" class="url-status"></div>
+            </div>
+        </div>
+
+        <div class="player-section" id="playerSection" style="display: none;">
+            <audio id="audioPlayer" style="display: none;"></audio>
+            
+            <!-- カスタムオーディオコントロール -->
+            <div class="custom-audio-player">
+                <!-- 波形ビジュアライザー -->
+                <canvas id="waveform" class="waveform-canvas"></canvas>
+                
+                <!-- プログレスバー -->
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar">
+                        <div class="progress-fill" id="progressFill"></div>
+                        <div class="progress-handle" id="progressHandle"></div>
+                    </div>
+                    <div class="time-display">
+                        <span id="currentTime">0:00</span>
+                        <span>/</span>
+                        <span id="duration">0:00</span>
+                    </div>
+                </div>
+                
+                <!-- コントロールボタン -->
+                <div class="controls">
+                    <button class="control-btn" id="prevBtn" title="10秒戻る">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/>
+                        </svg>
+                    </button>
+                    
+                    <button class="control-btn play-btn" id="playBtn" title="再生/一時停止">
+                        <svg id="playIcon" width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        <svg id="pauseIcon" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                        </svg>
+                    </button>
+                    
+                    <button class="control-btn" id="nextBtn" title="10秒進む">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- 追加コントロール -->
+                <div class="additional-controls">
+                    <!-- 音量コントロール -->
+                    <div class="volume-control">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                        </svg>
+                        <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider">
+                        <span id="volumeValue">50%</span>
+                    </div>
+                    
+                    <!-- 再生速度コントロール -->
+                    <div class="speed-control">
+                        <label for="speedSelect">速度:</label>
+                        <select id="speedSelect" class="speed-select">
+                            <option value="0.5">0.5x</option>
+                            <option value="0.75">0.75x</option>
+                            <option value="1" selected>1x</option>
+                            <option value="1.25">1.25x</option>
+                            <option value="1.5">1.5x</option>
+                            <option value="2">2x</option>
+                        </select>
+                    </div>
+                    
+                    <!-- ループ切り替え -->
+                    <button class="control-btn loop-btn" id="loopBtn" title="ループ">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h3>ファイル情報</h3>
+                <p>ファイル名: <span id="fileNameDisplay"></span></p>
+                <p>ファイルサイズ: <span id="fileSizeDisplay"></span></p>
+                <p>ファイルタイプ: <span id="fileTypeDisplay"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/script.js"></script>
+</body>
+</html>
