@@ -74,6 +74,8 @@ typings/
 
 # Nuxt.js build / generate output
 .nuxt
+
+# Vite build output
 dist
 
 # Gatsby files
