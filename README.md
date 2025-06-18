@@ -1,4 +1,4 @@
-# 音声再生位置ズレ解決デモ
+# 音声再生位置のズレを解決するMediaSourceを使ったデモ
 
 HTML5 Audioの再生位置変更時に発生するズレ問題と、MediaSource Extensionsを使った解決策のデモンストレーションです。
 
