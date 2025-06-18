@@ -12,8 +12,12 @@
 <body>
     <div class="container">
         <header>
-            <h1>音声再生方式による再生位置ズレ抑制デモ</h1>
+            <h1>音声再生位置ズレ抑制デモ</h1>
             <p class="subtitle">MediaSource Extensions vs ObjectURL方式の同期性能比較</p>
+            <div class="notice">
+                <p><strong>⚠️ 注意</strong>: この問題はサーバー上のファイルをストリーミング再生する際のみ発生します。<br>
+                ローカルファイルでは発生しないため、<strong>URL入力での音声読み込み</strong>で効果を確認してください。</p>
+            </div>
         </header>
         
         <!-- 再生方式選択 -->
@@ -23,12 +27,12 @@
                 <label class="switch-option">
                     <input type="radio" name="playbackMode" value="mediasource" checked>
                     <span class="radio-label">MediaSource方式</span>
-                    <small class="mode-description">高度な制御が可能（デバッグ用）</small>
+                    <small class="mode-description">ストリーミング再生位置ズレを改善</small>
                 </label>
                 <label class="switch-option">
                     <input type="radio" name="playbackMode" value="direct">
                     <span class="radio-label">ダイレクト方式</span>
-                    <small class="mode-description">標準的な再生方法</small>
+                    <small class="mode-description">標準的な再生方法（比較用）</small>
                 </label>
             </div>
         </div>
@@ -41,12 +45,13 @@
             <div id="fileName" class="file-name"></div>
             
             <div class="url-section">
-                <div class="section-divider">または</div>
+                <div class="section-divider">または（推奨）</div>
                 <div class="url-input-group">
-                    <input type="url" id="urlInput" placeholder="音声ファイルのURLを入力" class="url-input">
+                    <input type="url" id="urlInput" placeholder="音声ファイルのURLを入力（ストリーミング再生問題確認用）" class="url-input">
                     <button id="loadUrlBtn" class="load-url-btn">読み込み</button>
                 </div>
                 <div id="urlStatus" class="url-status"></div>
+                <p class="url-note">💡 ストリーミング再生時の位置ズレ問題を体験するには、URL入力をお使いください</p>
             </div>
         </div>
 
